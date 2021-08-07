@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class InfiniteBackgroundBehaviour : MonoBehaviour
 {
+	// Reference to the two Background objects.
     public Transform background1, background2;
 
+	// When true, the current Background being used primarily is background1
     private bool isBG1 = true;
+	// Reference to the Camera
     public Transform cam;
+	// The horizontal offset that movement has reached.
     private float curWidth;
+	// The width of each individual background element.
     public float elementWidth;
 
     private void Start()
     {
+		// Calculate the width between backgrounds
         elementWidth = Mathf.Abs(background1.position.x - background2.position.x);
+		// Initialise the next transition point
         curWidth = elementWidth;
     }
 

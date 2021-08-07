@@ -4,19 +4,25 @@ using UnityEngine;
 
 public class FollowCameraBehaviour : MonoBehaviour
 {
+	// Reference to the MainCamera to update its position and check 
     public Camera mainCamera;
+	// Reference to the object to follow (normally a player).
     public Transform playerTransform;
 
     //mapX, mapY is size of background image
     public float mapX = 150f;
     public float mapY = 150f;
+	
+	// Calculated actual bounds based on camera size and map size combined with the offset.
     public float minX = -1;
     public float maxX = -1;
     public float minY;
     public float maxY;
+	// Amount visible on the axis from the Camera used for calculating the above. Pulled from the camera.
     public float vertExtent;
     public float horzExtent;
 
+    // An offset to the map if necessary.
     public Vector2 offset;
 
 

@@ -6,11 +6,14 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
 {
     private PlatformManager _platformManager;
 
+	// Grid representation of IDs for texture placement.
     private int[,] map;
     private bool mapFiltered;
     private int width, height;
+	// Number of cells in each room.
     public int roomWidth, roomHeight;
 
+    // IDs used for representing borders and platforms from the textures in PlatformManager.
     public int topLayerID;
     public int lowerLayerID;
 
@@ -44,6 +47,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
             randPoint = new Vector2Int(-1, -1);
         }
 
+		// Sets the position on the grid and then calculates the rooms actual map bounds
         public void setGridPos(int gridX, int gridY)
         {
             this.gridX = gridX;
@@ -57,6 +61,9 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
                 (y + y2) / 2);
         }
 
+		// Gets a random point inside the room. This is only generated
+		// the first time it is called, and then the value is reused after.
+		// The bounds are shifted to not be within 2 of the edge of the room.
         public Vector2Int getRandPoint()
         {
             if (!randSet)
@@ -68,16 +75,21 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
             return randPoint;
         }
 
+		// Tests if the given X and Y are inside the room.
         public bool isPointInRoom(int testX, int testY)
         {
             return testX >= x && testX <= x2 && testY >= y && testY <= y2;
         }
     }
 
+	// The min/max range of room positions. This will vary the size of the entire map
     public int minRoomX, maxRoomX, minRoomY, maxRoomY;
 
+	// A list of all generated rooms
     public List<Room> rooms;
+	// The room at the end of the sequence as the goal.
     public Vector2Int goalRoom;
+	// The room where the player spawns.
     public Vector2Int startRoom;
 
     // Start is called before the first frame update
@@ -103,6 +115,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Creates a list of rooms by choosing a goal room to get to with start room set to 0,0.
+	// Finds a sequence of rooms using findPath() to create a sequence stored in rooms.
     public void populateRooms()
     {
         //Random.InitState(System.DateTime.Now.Millisecond);
@@ -125,6 +139,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         printRoomSequence();
     }
 
+	// Finds a random position excluding the specified "except".
     private Vector2Int randomRangeVector2Except(Vector2Int min, Vector2Int max, Vector2Int except)
     {
         Vector2Int result = min;
@@ -136,6 +151,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         return result;
     }
 
+	// Returns true, if the position x, y is avaliable as a room to move to.
+	// Verifies it is a valid room on the grid and then checks all rooms created so far.
     private bool isOpen(int x, int y)
     {
         if (x > maxRoomX || x < minRoomX || y > maxRoomY || y < minRoomY) return false;
@@ -150,6 +167,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         return true;
     }
 
+	// Finds the minimum X and Y rooms then offsets all the rooms using these values.
     private void fixRoomOffset()
     {
         int minPosX = rooms[0].gridX, minPosY = rooms[0].gridY;
@@ -167,6 +185,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Prints a line to Debug.Log with the rooms showing grid coordinates.
     private void printRoomSequence()
     {
         if (rooms == null || rooms.Count == 0)
@@ -183,6 +202,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         Debug.Log(result);
     }
 
+	// Generates a grid of 0s based on the min/max extents of rooms for the size.
+	// Then inserts a sequence of 1 to N showing the sequence of rooms from the start to the goal.
     private void printRooms()
     {
         int minPosX = rooms[0].gridX, minPosY = rooms[0].gridY, maxPosX = rooms[0].gridX, maxPosY = rooms[0].gridY;
@@ -225,6 +246,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         Debug.Log(result);
     }
 
+	// Gets a list of points adjacent to the specified x and y.
+	// The list is randomly ordered.
     private List<Vector2Int> getAdjacentPoints(int x, int y)
     {
         List<Vector2Int> result = new List<Vector2Int>();
@@ -236,6 +259,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         return result;
     }
 
+	// Randomly shuffles elements between random points within the list.
     private void shuffleList(List<Vector2Int> ts)
     {
         var count = ts.Count;
@@ -249,6 +273,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Searches for a path that goes from x, y to the goal room with constraints on the min/max distance travelled to reach it.
+	// This is called recursively.
     private bool findPath(int x, int y, int minDistance, int maxDistance)
     {
         // Prevent path from going too far
@@ -278,6 +304,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         return false;
     }
 
+	// Creates a map with width and height with "1"s on the border and filled with 0s otherwise.
     public void createMap(int width, int height)
     {
         mapFiltered = false;
@@ -300,6 +327,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Creates a map by calculating the width/height of the map.
+	// Then filling it with 0s and populating each room into the map individually.
     public void createMapFromRooms()
     {
         int minPosX = rooms[0].gridX, minPosY = rooms[0].gridY, maxPosX = rooms[0].gridX, maxPosY = rooms[0].gridY;
@@ -338,6 +367,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Calculates positions on the map to place the room and adds in borders to the room with 1s if there is a border
     private void createRoomBorder(int index)
     {
         // Create room borders
@@ -373,6 +403,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Randomly adds platforms to create a sequence of platforms moving toward the goal
     public void createSolutionPath()
     {
         for (int i = 0; i < rooms.Count - 1; i++)
@@ -403,6 +434,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         addPlatform(new Vector2Int(startRoomPos.x - 2, startRoomPos.y), new Vector2Int(startRoomPos.x + 2, startRoomPos.y));
     }
 
+	// Calculates a position to spawn the player at in the start room randomly by trying to check in a range around that point for an empty position.
     public Vector2Int findPlayerSpawn()
     {
         Vector2Int startRoomPos = rooms[0].getRandPoint();
@@ -417,6 +449,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         return rooms[0].center;
     }
 
+	// Adds a platform to the map given the start/end by placing 1s on the map
     private void addPlatform(Vector2Int start, Vector2Int end)
     {
         Vector2Int diff = end - start;
@@ -432,6 +465,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Gets the direction offset of the room where X(1=right, -1=left), Y(1=up,-1=down)
     private Vector2Int getOffsetFromRoom(int index, int otherRoom)
     {
         Vector2Int result = new Vector2Int(0, 0);
@@ -441,6 +475,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         return result;
     }
 
+	// Converts map for every position from 1 to either lowerLayerID or topLayerID.
+	// This is used to convert from a collision view of the map to a textureID mapped one.
     public void applyIDMapping()
     {
         for (int x = 0; x < width; x++)
@@ -462,6 +498,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         mapFiltered = true;
     }
 
+	// Iterates over every position in the map and spawns platforms using their texture IDs.
     public void spawnMap()
     {
         if (_platformManager == null)
@@ -481,6 +518,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Spawns the objectID some chanceToSpawn times in every room.
     public void spawnObjectsInRooms(int objectID, float chanceToSpawn)
     {
         for (int i = 0; i < rooms.Count; i++)
@@ -489,6 +527,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Spawns objects randomly by finding positions near the platform route
     public void spawnObjectsInRoom(int roomID, int objectID, float chanceToSpawn)
     {
         Room r = rooms[roomID];
@@ -504,6 +543,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Spawns any random valid objects in the room.
     public void spawnRandomObjectsInRooms(float chanceToSpawn)
     {
         for (int i = 0; i < rooms.Count; i++)
@@ -512,6 +552,8 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Spawns objects randomly by finding positions near the platform route
+	// Objects are selected randomly from the available options.
     public void spawnRandomObjectsInRoom(int roomID, float chanceToSpawn)
     {
         Room r = rooms[roomID];
@@ -527,6 +569,7 @@ public class PlatformGenerator : Singleton<PlatformGenerator>
         }
     }
 
+	// Prints the map by iterating over the grid and printing it out.
     public void printMap()
     {
         string result = "Map Filtered: " + mapFiltered + "\n";

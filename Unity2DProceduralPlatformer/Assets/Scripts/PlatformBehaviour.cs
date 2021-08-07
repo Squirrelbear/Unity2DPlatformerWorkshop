@@ -7,7 +7,9 @@ public class PlatformBehaviour : MonoBehaviour
     private PlatformManager _platformGenerator;
     private SpriteRenderer spriteRenderer;
 
+	// The graphic ID to use when configuring the Platform
     public int platformID;
+	// Position on the grid
     public Vector2Int pos;
 
     // Start is called before the first frame update

@@ -9,6 +9,7 @@ public class PlatformManager : Singleton<PlatformManager>
 
     public List<Sprite> platformTextures;
     public GameObject platformPrefab;
+	// References to the empty objects for organising objects spawned in.
     private Transform _platformParent;
     private Transform _objectParent;
     private Transform _enemyParent;
